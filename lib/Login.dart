@@ -84,7 +84,7 @@ class _LoginState extends State<Login> {
 
     }catch(e){
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed!'),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login failed: ${e.toString()}'),
         backgroundColor: Colors.red,
       )
       );
