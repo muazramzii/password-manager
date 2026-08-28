@@ -14,7 +14,10 @@ class CryptoService {
   factory CryptoService() => _instance;
   CryptoService._internal();
 
-  static const int _pbkdf2Iterations = 10000;
+  // 100k is a well-established practical minimum for PBKDF2-HMAC-SHA256.
+  // Kept here (rather than higher) because this runs on the UI thread with
+  // no isolate offload available on Flutter web.
+  static const int _pbkdf2Iterations = 100000;
   static const int _keyLengthBytes = 32;
 
   enc.Key? _key;
@@ -43,13 +46,17 @@ class CryptoService {
     _key = null;
   }
 
+  // GCM is authenticated encryption: it detects tampering with the
+  // ciphertext (returns an error on decrypt) rather than silently producing
+  // garbage the way CBC would. The recommended nonce length for GCM is 12
+  // bytes, not the 16-byte IV a block mode like CBC would use.
   EncryptedPayload encryptText(String plainText) {
     final key = _key;
     if (key == null) {
       throw StateError('Encryption key not initialized. Log in again.');
     }
-    final iv = enc.IV.fromSecureRandom(16);
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+    final iv = enc.IV.fromSecureRandom(12);
+    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
     final encrypted = encrypter.encrypt(plainText, iv: iv);
     return EncryptedPayload(ciphertext: encrypted.base64, iv: iv.base64);
   }
@@ -59,7 +66,7 @@ class CryptoService {
     if (key == null) {
       throw StateError('Encryption key not initialized. Log in again.');
     }
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
     return encrypter.decrypt64(
       payload.ciphertext,
       iv: enc.IV.fromBase64(payload.iv),
