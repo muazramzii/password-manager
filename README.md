@@ -22,10 +22,12 @@ behind it, encrypted.
 
 The original build ran on Android Studio + Flutter, talking to a PHP/MySQL
 backend hosted via cPanel/phpMyAdmin. It shipped, passed its unit and
-integration testing plan, and the report itself is honest about what
-was left undone: no multi-platform support, users could delete or edit
-data without a confirmation step, and the encryption was more asserted
-in the writeup than demonstrated in the code.
+integration testing plan, and the report itself is honest about its
+limitations: no confirmation step before a user could delete or edit
+data, and no offline support. Its recommendations for future work
+included going multi-platform (web, iOS) — none of which had been
+built yet. On top of that, the encryption the title promises was more
+asserted in the writeup than demonstrated in the code.
 
 Revisiting it in 2026 for a portfolio rebuild surfaced a more basic
 problem first: the PHP backend's domain doesn't resolve anymore — it's
