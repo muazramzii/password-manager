@@ -1,11 +1,9 @@
 
 import 'package:password_manager/Login.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:password_manager/Singletons/SupabaseConfig.dart';
 
 
 class Register extends StatefulWidget {
@@ -29,45 +27,65 @@ class _RegisterState extends State<Register> {
   TextEditingController _phoneno = new TextEditingController();
   TextEditingController _regName = new TextEditingController();
 
+  bool _isSubmitting = false;
+
 
   Future _saveRecord(BuildContext context) async {
 
-    var url = Uri.parse("https://www.triplet-lab.com/PasswordManager/Register.php");
-
-    var response = await http.post(url, body: {
-      "EMAIL": _regEmail.text,
-      "PASSWORD": _regPassword.text,
-      "PHONENO": _phoneno.text,
-      "NAME": _regName.text,
+    setState(() {
+      _isSubmitting = true;
     });
 
-    if (response.statusCode == 200) {
-      //var data = json.decode(response.body);
+    try {
+      final authResponse = await supabase.auth.signUp(
+        email: _regEmail.text.trim(),
+        password: _regPassword.text,
+        data: {
+          'name': _regName.text.trim(),
+          'phone': _phoneno.text.trim(),
+        },
+      );
+
+      if (authResponse.user == null) {
+        throw Exception('Registration failed. Please try again.');
+      }
+
+      if (!mounted) return;
 
       final snackBar = SnackBar(
         content: Container(
           height: 40.0,
           child: Center(
               child: Text(
-                "Data Saved.",
+                authResponse.session == null
+                    ? "Account created. Please check your email to confirm before logging in."
+                    : "Data Saved.",
                 style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               )),
         ),
-        //duration: Duration(seconds: 10),
         backgroundColor: Colors.black54,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
-      Timer timer = new Timer(new Duration(seconds: 3), () {
-
-        setState(() {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => new Login()));
-        });
-
+      Timer(Duration(seconds: 3), () {
+        if (!mounted) return;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => new Login()));
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Registration failed: ${e.toString()}'),
+        backgroundColor: Colors.red,
+      ));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -126,7 +144,7 @@ class _RegisterState extends State<Register> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter Password';
                 } else if(value.length < 6 ){
-                  return 'Name must be greater than 6 characters';
+                  return 'Password must be at least 6 characters';
                 }
                 return null;
               },
@@ -239,7 +257,7 @@ class _RegisterState extends State<Register> {
               shape: new RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0)),
             ),
-            onPressed: () {
+            onPressed: _isSubmitting ? null : () {
               if (_formKey.currentState!.validate()) {
                 // If the form is valid, display a Snackbar.
                 _saveRecord(context);
@@ -247,7 +265,16 @@ class _RegisterState extends State<Register> {
 
               }
             },
-            child: Text("SUBMIT",
+            child: _isSubmitting
+                ? SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : Text("SUBMIT",
               style: TextStyle(color: Colors.white,
                 fontWeight: FontWeight.w700,
                 fontSize: 20,),

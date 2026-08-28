@@ -1,15 +1,10 @@
-
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:password_manager/AddAccount.dart';
 import 'package:password_manager/Home.dart';
-import 'dart:async';
-import 'dart:convert';
-//import 'package:network_to_file_image/network_to_file_image.dart';
-//import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-//import 'package:cached_network_image/cached_network_image.dart';
-import 'package:path/path.dart' as p;
+
+import 'Singletons/AppData.dart';
+import 'Singletons/CryptoService.dart';
+import 'Singletons/SupabaseConfig.dart';
 
 
 class ListAccount extends StatefulWidget {
@@ -23,21 +18,57 @@ class _ListAccountState extends State<ListAccount> {
 
   final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  Future _GetItemtList() async{
+  Future<List<Map<String, dynamic>>> _getVaultItems() async{
+    final rows = await supabase
+        .from('vault_items')
+        .select()
+        .eq('user_id', appData.userid)
+        .order('created_at');
 
-    var url = Uri.parse("https://www.triplet-lab.com/kopshop/ItemList.php?token=Wht@11650");
+    return List<Map<String, dynamic>>.from(rows as List);
+  }
 
-    final response = await http.get(url);
+  Future<void> _openAddAccount() async {
+    final added = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddAccount()),
+    );
+    if (added == true && mounted) {
+      setState(() {});
+    }
+  }
 
-    print(response.body);
-
-    if(response.statusCode == 200){
-
-      print(response.body);
-      return json.decode(response.body);
-
+  void _showPasswordDialog(Map<String, dynamic> item) {
+    String password;
+    try {
+      password = cryptoService.decryptText(
+        EncryptedPayload(ciphertext: item['encrypted_password'], iv: item['iv']),
+      );
+    } catch (e) {
+      password = '(unable to decrypt)';
     }
 
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(item['site_name'] ?? ''),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Username: ${item['account_username']}'),
+            SizedBox(height: 10),
+            Text('Password: $password'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
 
@@ -45,8 +76,6 @@ class _ListAccountState extends State<ListAccount> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    //_GetEvent();
-    _GetItemtList();
   }
 
   @override
@@ -64,38 +93,37 @@ class _ListAccountState extends State<ListAccount> {
             leading: IconButton(
               icon: Icon(Icons.arrow_back, color: Colors.white),
               onPressed: (){
-                setState(() {
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) =>  Home()));
-                });
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) =>  Home()));
               },
             ),
           ),
         ),
       ),
       body:new SafeArea(
-        child: new FutureBuilder(
-          future:_GetItemtList() ,
+        child: new FutureBuilder<List<Map<String, dynamic>>>(
+          future:_getVaultItems() ,
           builder: (context, snapshot){
             if(snapshot.connectionState == ConnectionState.waiting){
               return new Center(
                 child: new CircularProgressIndicator(),
               );
-            }else if(snapshot.connectionState == ConnectionState.done){
-              if(snapshot.hasData){
-                return new ItemList(list: snapshot.data as List?);
-              }
             }
-            return Center(
-                child: Text("Currently No Product List Available"),
-            );
+            if(snapshot.hasError){
+              return Center(child: Text("Failed to load accounts: ${snapshot.error}"));
+            }
+            final items = snapshot.data ?? [];
+            if(items.isEmpty){
+              return Center(
+                  child: Text("No accounts saved yet. Tap + to add one."),
+              );
+            }
+            return ItemList(list: items, onTapItem: _showPasswordDialog);
           },
         ),
       ),
         floatingActionButton:
         FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
-          },
+          onPressed: _openAddAccount,
           icon: Icon(Icons.add_circle),
           label: Text("Account"),
         )
@@ -106,19 +134,21 @@ class _ListAccountState extends State<ListAccount> {
 
 class ItemList extends StatelessWidget {
 
-  final List? list;
+  final List<Map<String, dynamic>> list;
+  final void Function(Map<String, dynamic>) onTapItem;
 
-  ItemList({this.list});
+  ItemList({required this.list, required this.onTapItem});
 
   @override
   Widget build(BuildContext context) {
 
     return new ListView.separated(
-      itemCount: list==null?0:list!.length,
+      itemCount: list.length,
       separatorBuilder: (context, index) => Divider(
         color: Colors.grey,
       ),
       itemBuilder: (context,i){
+        final item = list[i];
 
         return new ListTile(
           leading: Image.asset(
@@ -134,20 +164,18 @@ class ItemList extends StatelessWidget {
                     child:Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(list![i]['NAME'], style: TextStyle(fontWeight: FontWeight.bold),),
+                        Text(item['site_name'] ?? '', style: TextStyle(fontWeight: FontWeight.bold),),
                         SizedBox(height: 2.0,),
+                        Text(item['account_username'] ?? '', style: TextStyle(color: Colors.grey[700], fontSize: 12),),
                       ],
                     )
                 ),
               ),
             ],
           ),
-          trailing: IconButton(
-            icon: Icon(Icons.navigate_next, color: Colors.grey),
-            onPressed: (){},
-          ) ,
+          trailing: Icon(Icons.navigate_next, color: Colors.grey),
           onTap: (){
-            //Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => new ItemDetail(lists: list,index: i,)));
+            onTapItem(item);
           },
         );
       },
