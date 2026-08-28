@@ -1,14 +1,11 @@
 import 'package:password_manager/Home.dart';
 import 'package:password_manager/Register.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
-import 'package:intl/intl.dart';
 
 import 'Singletons/AppData.dart';
-//import 'package:password_manager/Singletons/AppData.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
+import 'Singletons/CryptoService.dart';
+import 'Singletons/SupabaseConfig.dart';
 
 class Login extends StatefulWidget {
 
@@ -42,58 +39,63 @@ class _LoginState extends State<Login> {
 
 
 
-  Future<Null>  _loginApps(BuildContext context) async{
+  Future<void> _loginApps(BuildContext context) async {
 
-    var url =  Uri.parse("https://www.triplet-lab.com/PasswordManager/Login.php");
+    setState(() {
+      _isLoading = true;
+    });
 
+    try {
+      final authResponse = await supabase.auth.signInWithPassword(
+        email: _email.text.trim(),
+        password: _password.text,
+      );
 
-    try{
-
-      final response = await http.post(url,body:{
-        'token':'Wht@11650',
-        'email':_email.text,
-        'password':_password.text,
-      });
-
-      if(response.statusCode == 200){
-        print(response.body);
-
-        var data = json.decode(response.body);
-
-
-        setState(() {
-
-          isLoggedIn = true;
-
-          appData.userid = int.parse(data['USERID']);
-          appData.email = data['EMAIL'];
-          appData.phoneno = data['PHONE'];
-          appData.name = data['NAME'];
-
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Success'),
-            backgroundColor: Colors.green,
-          ));
-
-          new Timer(new Duration(seconds: 3), (){
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => new Home()));
-
-          });
-
-
-        });
+      final user = authResponse.user;
+      if (user == null) {
+        throw Exception('Invalid email or password');
       }
 
-    }catch(e){
-      setState(() {
+      final profile = await supabase
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .single();
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed!'),
-          backgroundColor: Colors.red,
-        )
-        );
+      cryptoService.deriveKey(_password.text, profile['kdf_salt'] as String);
 
+      appData.userid = user.id;
+      appData.email = user.email ?? _email.text.trim();
+      appData.name = profile['name'] as String? ?? '';
+      appData.phoneno = profile['phone'] as String? ?? '';
+
+      if (!mounted) return;
+
+      isLoggedIn = true;
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Success'),
+        backgroundColor: Colors.green,
+      ));
+
+      Timer(Duration(seconds: 1), (){
+        if (!mounted) return;
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => new Home()));
       });
+
+    }catch(e){
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed!'),
+        backgroundColor: Colors.red,
+      )
+      );
       print("Error : "+e.toString());
 
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -290,10 +292,8 @@ class _LoginState extends State<Login> {
               onPressed: ()async{
 
                 if (_formKey.currentState!.validate()) {
-
+                  _loginApps(context);
                 }
-
-                _loginApps(context);
 
                 //Navigator.push(context, MaterialPageRoute(builder: (context)=>Home()));
 
