@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:password_manager/Home.dart';
 import 'package:password_manager/Login.dart';
+import 'package:password_manager/Singletons/SupabaseConfig.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
   runApp(MyApp());
 }
 
