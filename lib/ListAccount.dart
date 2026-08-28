@@ -173,10 +173,7 @@ class ItemList extends StatelessWidget {
               ),
             ],
           ),
-          trailing: IconButton(
-            icon: Icon(Icons.navigate_next, color: Colors.grey),
-            onPressed: () => onTapItem(item),
-          ) ,
+          trailing: Icon(Icons.navigate_next, color: Colors.grey),
           onTap: (){
             onTapItem(item);
           },
