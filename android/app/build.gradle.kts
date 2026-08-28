@@ -14,9 +14,20 @@ if (hasReleaseSigning) {
     keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
+fun requiredKeystoreProperty(key: String): String {
+    return keystoreProperties.getProperty(key)
+        ?: throw GradleException(
+            "android/key.properties is missing '$key' -- see the \"Android release builds\" " +
+                "section in README.md for the expected format."
+        )
+}
+
 android {
     namespace = "com.muazramzii.password_manager"
     compileSdk = flutter.compileSdkVersion
+    // Pinned above flutter.ndkVersion: app_links, path_provider_android,
+    // shared_preferences_android and url_launcher_android all require
+    // NDK 27.0.12077973, newer than what this Flutter version bundles by default.
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -42,10 +53,10 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = requiredKeystoreProperty("keyAlias")
+                keyPassword = requiredKeystoreProperty("keyPassword")
+                storeFile = file(requiredKeystoreProperty("storeFile"))
+                storePassword = requiredKeystoreProperty("storePassword")
             }
         }
     }
