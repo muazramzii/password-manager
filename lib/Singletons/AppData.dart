@@ -5,15 +5,20 @@ class AppData{
 
   static final AppData _appData = new AppData._internal();
 
-  String  email= '',name = '', phoneno = '', password = '', nokp = '', address = '' ;
-  int userid = 0, usertype = 0;
-
+  String userid = '', email = '', name = '', phoneno = '';
 
   factory AppData(){
     return _appData;
   }
 
   AppData._internal();
+
+  void clear(){
+    userid = '';
+    email = '';
+    name = '';
+    phoneno = '';
+  }
 
 }
 
