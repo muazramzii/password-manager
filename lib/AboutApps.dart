@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'Singletons/AppInfo.dart';
+
 class AboutApps extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class AboutApps extends StatelessWidget {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
-              Text('Version 1.0.0', style: TextStyle(color: Colors.grey[700])),
+              Text('Version ${AppInfo.version}', style: TextStyle(color: Colors.grey[700])),
               SizedBox(height: 20),
               Text(
                 'Password Manager helps you store your website and app credentials '
