@@ -1,9 +1,12 @@
 
 import 'package:password_manager/Home.dart';
+import 'package:password_manager/ListAccount.dart';
 import 'package:password_manager/Login.dart';
 //import 'package:password_manager/Profile.dart';
 import 'package:flutter/material.dart';
 import 'package:password_manager/Singletons/AppData.dart';
+import 'package:password_manager/Singletons/CryptoService.dart';
+import 'package:password_manager/Singletons/SupabaseConfig.dart';
 
 class NavDrawer extends StatelessWidget {
   @override
@@ -35,8 +38,8 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.lock),
             title: Text('List Account'),
-            onTap: () => {
-              //Navigator.push(context, MaterialPageRoute(builder: (context) => YourPets()))
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ListAccount()));
             },
           ),
           Divider(
@@ -58,6 +61,9 @@ class NavDrawer extends StatelessWidget {
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),
             onTap: () async{
+              await supabase.auth.signOut();
+              cryptoService.clear();
+              appData.clear();
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (BuildContext context) => Login()),
