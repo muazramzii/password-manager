@@ -1,8 +1,8 @@
 
-import 'package:password_manager/Home.dart';
+import 'package:password_manager/AboutApps.dart';
 import 'package:password_manager/ListAccount.dart';
 import 'package:password_manager/Login.dart';
-//import 'package:password_manager/Profile.dart';
+import 'package:password_manager/Profile.dart';
 import 'package:flutter/material.dart';
 import 'package:password_manager/Singletons/AppData.dart';
 import 'package:password_manager/Singletons/CryptoService.dart';
@@ -27,8 +27,8 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.supervised_user_circle_outlined),
             title: Text('Profile'),
-            onTap: () => {
-              //Navigator.push(context, MaterialPageRoute(builder: (context) => Profile()))
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => Profile()));
             },
           ),
           Divider(
@@ -49,8 +49,8 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('About Apps'),
-            onTap: () => {
-              //Navigator.push(context, MaterialPageRoute(builder: (context) => YourPets()))
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => AboutApps()));
             },
           ),
           Divider(
