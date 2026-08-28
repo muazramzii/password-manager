@@ -59,7 +59,33 @@ suite) for manually sanity-checking the encryption round-trip:
 dart run test/crypto_roundtrip_check.dart
 ```
 
+## Android release builds
+
+The app is signed for release and ready to build a Play Store bundle:
+
+```
+flutter build appbundle --release   # .aab for Play Store upload
+flutter build apk --release         # .apk for direct install/testing
+```
+
+This requires `android/key.properties` (gitignored, not in this repo) pointing
+at a release keystore:
+
+```
+storePassword=...
+keyPassword=...
+keyAlias=...
+storeFile=/absolute/path/to/keystore.jks
+```
+
+**The release keystore is not part of this repo and must never be committed.**
+Losing it means you can never publish an update to the same Play Store
+listing again — back it up somewhere durable (not just this machine).
+
 ## Known limitations
 
-- Profile editing and "About" screens are placeholders (not wired up).
+- Profile screen is read-only (no editing yet).
 - No password-reset flow yet — relies on Supabase Auth defaults.
+- Release build has been verified to build, sign (real keystore, not debug),
+  and minify correctly, but has not been installed and exercised on a
+  physical/emulated Android device — do that before submitting to Play Store.
