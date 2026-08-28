@@ -60,9 +60,9 @@ class _MockListAccount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mockItems = [
-      {'site_name': 'Gmail', 'account_username': 'muazramzii.123@gmail.com'},
-      {'site_name': 'Facebook', 'account_username': 'muaz.ramzi'},
-      {'site_name': 'Politeknik Portal', 'account_username': '01DDT19F1187'},
+      {'site_name': 'Gmail', 'account_username': 'demo.user@example.com'},
+      {'site_name': 'Facebook', 'account_username': 'demo.user'},
+      {'site_name': 'Campus Portal', 'account_username': 'STU2021001'},
     ];
     return Scaffold(
       appBar: PreferredSize(
