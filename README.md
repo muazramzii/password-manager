@@ -8,6 +8,76 @@ encrypted vault. Passwords are encrypted **client-side** with AES-256
 before they ever leave the device, so the backend only ever stores
 ciphertext.
 
+## The story
+
+This started in Short Semester 2021 as a group FYP at Politeknik Ungku
+Omar (Security Track) — "Password Manager Apps With Encryption" by
+Muhammad Muaz Ramzi, Hasan Albasri, and Muhammad Faris, supervised by
+Encik Mohd Nizam B. Kamarull Baharin. The technical report frames the
+problem plainly: people reuse weak passwords across too many accounts
+because remembering a strong, unique one for every site is impractical,
+and that's exactly the habit that gets accounts hacked. The proposed fix
+was a mobile vault — register once, store every other username/password
+behind it, encrypted.
+
+The original build ran on Android Studio + Flutter, talking to a PHP/MySQL
+backend hosted via cPanel/phpMyAdmin. It shipped, passed its unit and
+integration testing plan, and the report itself is honest about its
+limitations: no confirmation step before a user could delete or edit
+data, and no offline support. Its recommendations for future work
+included going multi-platform (web, iOS) — none of which had been
+built yet. On top of that, the encryption the title promises was more
+asserted in the writeup than demonstrated in the code.
+
+Revisiting it in 2026 for a portfolio rebuild surfaced a more basic
+problem first: the PHP backend's domain doesn't resolve anymore — it's
+simply gone. And a closer read of the original `ListAccount` screen
+showed its "Add" button never actually added anything, and its data
+fetch call pointed at an unrelated, mismatched API left over from a
+different template. The vault feature had never really been wired up
+end to end.
+
+So this version keeps the original's idea and screens, but replaces
+what's underneath: **Supabase** (Postgres + Auth, Row Level Security)
+instead of the dead PHP endpoints, and **real client-side AES-256
+encryption** (keyed by a PBKDF2 derivation of the login password) instead
+of an unimplemented claim — closing the gap between what the FYP report
+described and what the app actually did. See the [Architecture](#architecture)
+section below for how that's built, and [Screenshots](#screenshots) for
+what it looks like today.
+
+## Screenshots
+
+| Login | Register |
+|---|---|
+| ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
+
+Sign in with Supabase Auth, or register a new account — the master
+password set here is also what derives the AES key for the vault below.
+
+| Home |
+|---|
+| ![Home](docs/screenshots/home.png) |
+
+Landing screen after login, with quick access to the vault ("Secure
+Account") and category shortcuts.
+
+| List Account | Add Account |
+|---|---|
+| ![List Account](docs/screenshots/list_account.png) | ![Add Account](docs/screenshots/add_account.png) |
+
+The vault: saved entries are fetched from Supabase and decrypted
+on-device; adding one encrypts the password client-side before it's ever
+sent to the server.
+
+| Profile | About Apps |
+|---|---|
+| ![Profile](docs/screenshots/profile.png) | ![About Apps](docs/screenshots/about.png) |
+
+*(Screenshots are captured via `lib/main_screenshot.dart`, a standalone
+harness that renders one screen at a time with mock data — see the file
+for how to regenerate them after a UI change.)*
+
 ## Architecture
 
 - **Flutter** app (Dart, null-safe, Flutter 3.29+)
