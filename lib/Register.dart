@@ -144,7 +144,7 @@ class _RegisterState extends State<Register> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter Password';
                 } else if(value.length < 6 ){
-                  return 'Name must be greater than 6 characters';
+                  return 'Password must be at least 6 characters';
                 }
                 return null;
               },
