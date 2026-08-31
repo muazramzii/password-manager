@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
           .eq('user_id', appData.userid);
       if (!mounted) return;
       setState(() {
-        _vaultCount = (rows as List).length;
+        _vaultCount = rows.length;
       });
     } catch (e) {
       // leave _vaultCount null -> shows a placeholder instead of a wrong number
