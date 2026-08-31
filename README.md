@@ -48,6 +48,9 @@ what it looks like today.
 
 ## Screenshots
 
+Captured on a real Android emulator (API 36) running the actual app end to
+end — not a mockup.
+
 | Login | Register |
 |---|---|
 | ![Login](docs/screenshots/login.png) | ![Register](docs/screenshots/register.png) |
@@ -55,12 +58,14 @@ what it looks like today.
 Sign in with Supabase Auth, or register a new account — the master
 password set here is also what derives the AES key for the vault below.
 
-| Home |
-|---|
-| ![Home](docs/screenshots/home.png) |
+| Home | Nav Drawer |
+|---|---|
+| ![Home](docs/screenshots/home.png) | ![Nav Drawer](docs/screenshots/nav_drawer.png) |
 
 Landing screen after login, with quick access to the vault ("Secure
-Account") and category shortcuts.
+Account" — the count is read live from Supabase, not hardcoded) and
+category shortcuts. The drawer gives access to Profile, the vault, About,
+and Logout.
 
 | List Account | Add Account |
 |---|---|
@@ -70,13 +75,22 @@ The vault: saved entries are fetched from Supabase and decrypted
 on-device; adding one encrypts the password client-side before it's ever
 sent to the server.
 
+| Password revealed |
+|---|
+| ![Password revealed](docs/screenshots/list_account_reveal.png) |
+
+Tapping an entry decrypts it on-device and shows the real
+username/password — proof the encrypt-on-write, decrypt-on-read round
+trip actually works, not just that it compiles.
+
 | Profile | About Apps |
 |---|---|
 | ![Profile](docs/screenshots/profile.png) | ![About Apps](docs/screenshots/about.png) |
 
-*(Screenshots are captured via `lib/main_screenshot.dart`, a standalone
-harness that renders one screen at a time with mock data — see the file
-for how to regenerate them after a UI change.)*
+*(Email and phone number are redacted in the Profile screenshot above —
+everything else is unedited. Screenshots can be regenerated with
+`lib/main_screenshot.dart`, a standalone harness that renders one screen
+at a time with mock data; see the file for usage.)*
 
 ## Architecture
 
@@ -156,6 +170,9 @@ listing again — back it up somewhere durable (not just this machine).
 
 - Profile screen is read-only (no editing yet).
 - No password-reset flow yet — relies on Supabase Auth defaults.
-- Release build has been verified to build, sign (real keystore, not debug),
-  and minify correctly, but has not been installed and exercised on a
-  physical/emulated Android device — do that before submitting to Play Store.
+- Verified end to end on a real Android emulator (register, login, add/list/reveal
+  a vault entry, correct live vault count) — see [Screenshots](#screenshots).
+  The **release** build specifically (signed + minified) has been confirmed
+  to build and install, but hasn't yet had this same full flow re-run
+  against it — do that before submitting to Play Store, since minification
+  is the one variable debug testing doesn't cover.
