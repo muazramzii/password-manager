@@ -166,11 +166,12 @@ storeFile=/absolute/path/to/keystore.jks
 Losing it means you can never publish an update to the same Play Store
 listing again — back it up somewhere durable (not just this machine).
 
+Verified end to end (register, login, add/list/reveal a vault entry,
+correct live vault count) on both a real Android emulator and this
+signed, minified release build (`app-release.apk`) installed on a
+physical Android device — see [Screenshots](#screenshots).
+
 ## Known limitations
 
 - Profile screen is read-only (no editing yet).
 - No password-reset flow yet — relies on Supabase Auth defaults.
-- Verified end to end (register, login, add/list/reveal a vault entry,
-  correct live vault count) on both a real Android emulator and the
-  signed, minified release build (`app-release.apk`) installed on a
-  physical Android device — see [Screenshots](#screenshots).
