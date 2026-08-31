@@ -170,9 +170,7 @@ listing again — back it up somewhere durable (not just this machine).
 
 - Profile screen is read-only (no editing yet).
 - No password-reset flow yet — relies on Supabase Auth defaults.
-- Verified end to end on a real Android emulator (register, login, add/list/reveal
-  a vault entry, correct live vault count) — see [Screenshots](#screenshots).
-  The **release** build specifically (signed + minified) has been confirmed
-  to build and install, but hasn't yet had this same full flow re-run
-  against it — do that before submitting to Play Store, since minification
-  is the one variable debug testing doesn't cover.
+- Verified end to end (register, login, add/list/reveal a vault entry,
+  correct live vault count) on both a real Android emulator and the
+  signed, minified release build (`app-release.apk`) installed on a
+  physical Android device — see [Screenshots](#screenshots).
