@@ -8,6 +8,13 @@ encrypted vault. Passwords are encrypted **client-side** with AES-256
 before they ever leave the device, so the backend only ever stores
 ciphertext.
 
+## Download & try it
+
+Not published to the Play Store — grab the signed APK directly from
+[**Releases**](https://github.com/muazramzii/password-manager/releases/latest)
+and install it (you'll need to allow "install from unknown sources" since
+it isn't from the Play Store).
+
 ## The story
 
 This started in Short Semester 2021 as a group FYP at Politeknik Ungku
