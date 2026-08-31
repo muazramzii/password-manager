@@ -4,6 +4,7 @@
 import 'package:password_manager/ListAccount.dart';
 import 'package:password_manager/NavDrawer.dart';
 import 'package:password_manager/Singletons/AppData.dart';
+import 'package:password_manager/Singletons/SupabaseConfig.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -29,10 +30,27 @@ class _HomeState extends State<Home> {
 
 
   bool _validate = false;
+  int? _vaultCount;
 
   @override
   void initState() {
     super.initState();
+    _loadVaultCount();
+  }
+
+  Future<void> _loadVaultCount() async {
+    try {
+      final rows = await supabase
+          .from('vault_items')
+          .select('id')
+          .eq('user_id', appData.userid);
+      if (!mounted) return;
+      setState(() {
+        _vaultCount = (rows as List).length;
+      });
+    } catch (e) {
+      // leave _vaultCount null -> shows a placeholder instead of a wrong number
+    }
   }
 
   @override
@@ -90,7 +108,7 @@ class _HomeState extends State<Home> {
                             SizedBox(width: 10,),
                             Expanded(
                               flex: 1,
-                              child: Text('13',
+                              child: Text(_vaultCount?.toString() ?? '-',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(fontSize: 40,
                                       color: Colors.white,
