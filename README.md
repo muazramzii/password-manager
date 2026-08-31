@@ -75,9 +75,9 @@ The vault: saved entries are fetched from Supabase and decrypted
 on-device; adding one encrypts the password client-side before it's ever
 sent to the server.
 
-| Password revealed |
+| Password Revealed |
 |---|
-| ![Password revealed](docs/screenshots/list_account_reveal.png) |
+| ![Password Revealed](docs/screenshots/list_account_reveal.png) |
 
 Tapping an entry decrypts it on-device and shows the real
 username/password — proof the encrypt-on-write, decrypt-on-read round
